@@ -1,25 +1,15 @@
-# README
+# Learning by Doing 
+Mackenzie Child's video really inspire me. So I decided to follow all of his rails video tutorial to learn how to build a web app. Through the video, I would try to build the web app by my self and record the courses step by step in text to facilitate the review.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
 
-Things you may want to cover:
+# How to Build a Reddit or Hacker News Style Web App in Rails
 
-* Ruby version
+## Highlights of this Course
+1. Sign up / Sign in & Out
+2. Submit a link with a Title & URL
+3. Vote up or down on a link
+4. Comment on links submissions
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-# raddit
+#Create a New Rails Application
+First,we create a rails application named 'raddit'.
+	rails new raddit
