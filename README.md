@@ -99,3 +99,17 @@ the commit
 	git add .
 	git commit -am ‘Add devise and create User model’
 
+Now, we have the ability to sign in and out, but it’s not very practical for us to sign in and sign out, so that’s add some links to our view files.
+In our view `app/views/layouts/application.html.erb`. we add conditional statement
+	<% if user_signed_in? %>
+		<ul>
+			<li><%= link_to 'Submit link', new_link_path %></li>
+			<li><%= link_to 'Account', edit_user_registration_path %></li>
+			<li><%= link_to 'Sign out', destroy_user_session_path, :method => :delete %></li>
+		</ul>
+	<% else %>
+		<ul>
+			<li><%= link_to 'Sign up', new_user_registration_path %></li>
+			<li><%= link_to 'Sign in', new_user_session_path %></li>
+		</ul>		
+	<% end %>
