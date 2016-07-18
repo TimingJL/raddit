@@ -163,3 +163,286 @@ we gonna to remove this line:
 	<br>
 	<%= link_to 'New Link', new_link_path %>
 so now, user has to signed in order to create a link as well as add it or destroy that link and only that link the user who created that link is able to destroy that link.
+That’s commit
+	git add .
+	git commit -am ‘Authorization on links’
+	git checkout master
+	git merge add_users
+So now we have the ability to sign in and out.
+
+# Bootstrap and styling
+https://github.com/twbs/bootstrap-sass           
+To do that, let’s create a new branch
+	git checkout -b add_bootstrap
+we need to add bootstrap gem in our `Gemfile`
+ gem 'bootstrap-sass', '~> 3.3', '>= 3.3.6'
+and that’s do `bundle install`, then go back to our server and restart it.
+A few things we to do to get bootstrap working
+Import Bootstrap styles in `app/assets/stylesheets/application.scss`:
+`application.css` needs to rename to `application.scss`
+	// "bootstrap-sprockets" must be imported before "bootstrap" and "bootstrap/variables"
+	@import "bootstrap-sprockets";
+	@import "bootstrap";
+Note: If you use `bootstrap-sprockets`, you will get the error:
+	File to import not found or unreadable: bootstrap-sprockets
+Only for Twitter Bootstrap 3, bootstrap-sprockets is used.
+https://rubyplus.com/articles/3981-Integrating-Twitter-Bootstrap-4-with-Rails-5       
+
+And also, Require Bootstrap Javascripts in `app/assets/javascripts/application.js`:
+	//= require jquery
+	//= require bootstrap-sprockets
+
+It is important that it comes after //= require jquery. It is also important that //= require_tree is the last thing to be required. The reason is, //= require_tree . compiles each of the other Javascript files in the javascripts directory and any subdirectories. If you require bootstrap-sprockets after everything else, your other scripts may not have access to the Bootstrap functions.
+
+One things I do know is the scaffold is gonna override currently the bootstrap. So we delete the entire file `app/stylesheets/scaffolds.scss`
+
+## Adding some styling to our pages and our forms
+`app/views/layouts/application.html.erb`
+	<!DOCTYPE html>
+	<html>
+	  <head>
+	    <title>Raddit</title>
+	    <%= csrf_meta_tags %>
+	    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+	    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+	  </head>
+
+	  <body>
+			<header class="navbar navbar-default" role="navigation">
+				<div class="navbar-inner">
+				  <div class="container">
+				    <div id="logo" class="navbar-brand"><%= link_to "Raddit", root_path %></div>
+				      <nav class="collapse navbar-collapse navbar-ex1-collapse">
+							<% if user_signed_in? %>
+								<ul class="nav navbar-nav navbar-right">
+									<li><%= link_to 'Submit link', new_link_path %></li>
+									<li><%= link_to 'Account', edit_user_registration_path %></li>
+									<li><%= link_to 'Sign out', destroy_user_session_path, :method => :delete %></li>
+								</ul>
+							<% else %>
+								<ul class="nav navbar-nav pull-right">
+									<li><%= link_to 'Sign up', new_user_registration_path %></li>
+									<li><%= link_to 'Sign in', new_user_session_path %></li>
+								</ul>		
+							<% end %>	      
+				      </nav>	    
+				  </div>
+				 </div>
+			</header>
+
+			<div id="main_content" class="container">
+				<% flash.each do |name, msg| %>
+					<%= content_tag(:div, msg, class: "alert alert-#{name}") %>
+				<% end %>
+
+				<div id="content" class="col-md-9 center-block">
+					<%= yield %>
+				</div>
+			</div>
+	  </body>
+	</html>
+
+Basically, we just add an navbar with the links.
+And we add a bit of sytling to application css file
+`app/assets/stylesheets/application.css.scss`
+
+	#logo {
+		font-size: 26px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: -1px;
+		padding: 15px 0;
+		a {
+			color: #2F363E;
+		}
+	}
+
+	#main_content {
+		#content {
+			float: none;
+		}
+		padding-bottom: 100px;
+		.link {
+			padding: 2em 1em;
+			border-bottom: 1px solid #e9e9e9;
+			.title {
+
+				a {
+					color: #FF4500;
+				}
+			}
+		}
+		.comments_title {
+			margin-top: 2em;
+		}
+		#comments {
+			.comment {
+				padding: 1em 0;
+				border-top: 1px solid #E9E9E9;
+				.lead {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
+It take cares to logo and as well as content and comments and stuff.
+
+Next, in index.html.erb file
+`app/views/links/index.html.erb`
+
+	<% @links.each do |link| %>
+	  <div class="link row clearfix">
+	    <h2>
+	      <%= link_to link.title, link %><br>
+	      <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user.email %></small>
+	    </h2>
+	  </div>
+	<% end %>
+
+
+`app/views/links/show.html.erb`
+	<div class="page-header">
+	  <h1><a href="<%= @link.url %>"><%= @link.title %></a><br> <small>Submitted by <%= @link.user_id %></small></h1>
+	</div>
+
+	<div class="btn-group">
+		<%= link_to 'Visit URL', @link.url, class: "btn btn-primary" %>
+	</div>
+
+	<% if @link.user == current_user %>
+		<div class="btn-group">
+			<%= link_to 'Edit',edit_link_path(@link), class: "btn btn-default" %>
+			<%= link_to 'Destroy', @link, method: :delete, data: { confirm: 'Are you sure?'}, class: "btn btn-default" %>
+		</div>
+	<% end %>
+
+
+`app/views/links/_form.html.erb`
+	<%= form_for(link) do |f| %>
+	  <% if link.errors.any? %>
+	    <div id="error_explanation">
+	      <h2><%= pluralize(link.errors.count, "error") %> prohibited this link from being saved:</h2>
+
+	      <ul>
+	      <% link.errors.full_messages.each do |message| %>
+	        <li><%= message %></li>
+	      <% end %>
+	      </ul>
+	    </div>
+	  <% end %>
+
+	  <div class="form-group">
+	    <%= f.label :title %><br>
+	    <%= f.text_field :title, class: "form-control" %>
+	  </div>
+	  <div class="form-group">
+	    <%= f.label :url %><br>
+	    <%= f.text_field :url, class: "form-control" %>
+	  </div>
+	  <br>
+	  <div class="form-group">
+	    <%= f.submit "Submit", class: "btn btn-lg btn-primary" %>
+	  </div>
+	<% end %>
+
+
+`app/views/devise/registrations/edit.html.erb`
+	<h2>Edit <%= resource_name.to_s.humanize %></h2>
+
+	<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+	  <%= devise_error_messages! %>
+
+	  <div class="panel panel-default">
+	    <div class="panel-body">
+
+	      <div class="form-inputs">
+
+	      <div class="form-group">
+	        <%= f.label :email %>
+	        <%= f.email_field :email, class: "form-control", :autofocus => true %>
+	      </div>
+
+	      <div class="form-group">
+	        <%= f.label :password %> <i>(leave blank if you don't want to change it)</i>
+	        <%= f.password_field :password, class: "form-control", :autocomplete => "off" %>
+	      </div>
+
+	      <div class="form-group">
+	        <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i>
+	        <%= f.password_field :current_password, class: "form-control" %>
+	      </div>
+
+	      </div>
+
+	      <div class="form-group">
+	        <%= f.submit "Update", class: "btn btn-primary" %>
+	      </div>
+
+	    <% end %>
+	  </div>
+	  <div class="panel-footer">
+
+	    <h3>Cancel my account</h3>
+
+	    <p>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?" }, method: :delete, class: "btn btn-default" %></p>
+
+	  </div>
+
+`app/views/devise/registrations/new.html.erb`
+	<h2>Sign up</h2>
+
+	<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+	  <%= devise_error_messages! %>
+
+	    <div class="form-group">
+	      <%= f.label :email %>
+	      <%= f.email_field :email, autofocus: true, class: "form-control", required: true %>
+	    </div>
+
+	    <div class="form-group">
+	      <%= f.label :password %>
+	      <%= f.password_field :password, class: "form-control", required: true %>
+	    </div>
+
+	    <div class="form-group">
+	      <%= f.label :password_confirmation %>
+	      <%= f.password_field :password_confirmation, class: "form-control", required: true %>
+	    </div>
+
+	    <div class="form-group">
+	      <%= f.submit "Sign up", class: "btn btn-lg btn-primary" %>
+	    </div>
+	<% end %>
+
+	<%= render "devise/shared/links" %>
+
+
+`app/views/devise/sessions/new.html.erb`
+	<h2>Sign in</h2>
+
+	<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+
+	  <div class="form-group">
+	    <%= f.label :email %>
+	    <%= f.email_field :email, autofocus: true, class: "form-control", required: false %>
+	  </div>
+
+	  <div class="form-group">
+	    <%= f.label :password %>
+	    <%= f.password_field :password, class: "form-control", required: false %>
+	  </div>
+
+	  <div class="checkbox">
+	    <label>
+	    <%= f.check_box :remember_me, required: false, as: :boolean if devise_mapping.rememberable? %> Remember Me
+	    </label>
+	  </div>
+
+	  <div class="form-group">
+	    <%= f.submit "Sign In", class: "btn btn-primary" %>
+	  </div>
+
+	<% end %>
+
+	<%= render "devise/shared/links" %>
