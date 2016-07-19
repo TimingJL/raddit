@@ -76,7 +76,7 @@ Under `config/environments/development.rb`, we need to add this line
 
 Under `config/locales/route.rb`, we add 
 
-root to: "links#index"
+	root to: "links#index"
 
 So we go back to `http://localhost:3000`, it would show us the links controller as homepage.
 
@@ -86,7 +86,7 @@ In `app/views/layouts/application.html.erb`, we add
 		<%= content_tag(:div, msg, class: "alert alert-#{name}") %>
 	<% end %>
 
-in `<body></body>` before `<%= yield%>`
+in `<body></body>` before `<%= yield %>`
 
 We add the devise under the views directory
 
@@ -101,7 +101,8 @@ Then generate the model and migration for us
 	rake db:migrate
 
 Now, under the model, we have a user. Then, restart the server to check out it actaully worked by going to         
-http://localhost:3000/users/sign_up         
+
+`http://localhost:3000/users/sign_up `       
 
 We can make sure everything is correct by rails console
 
@@ -131,7 +132,7 @@ the commit
 	git commit -am ‘Add devise and create User model’
 
 Now, we have the ability to sign in and out, but it’s not very practical for us to sign in and sign out, so that’s add some links to our view files.      
-In our view `app/views/layouts/application.html.erb`. we add conditional statement
+In our view `app/views/layouts/application.html.erb`, we add conditional statement
 
 	<% if user_signed_in? %>
 		<ul>
@@ -147,11 +148,11 @@ In our view `app/views/layouts/application.html.erb`. we add conditional stateme
 	<% end %>
 
 and refresh the web page to ensure everythings work.
-We hope the sign out account does’t show the summit lin. So to fix it, we need to create an association here between a user and links. In our user file `app/models/user.rb`, we are going to add ‘a user has many links’
+We hope the sign out account does’t show the summit link. So to fix it, we need to create an association here between a user and links. In our user file `app/models/user.rb`, we are going to add ‘a user has many links’
 
 	has_many :links
 
-And under ‘app/models/link.rb’, we add ‘a link belongs to user’
+And under `app/models/link.rb`, we add ‘a link belongs to user’
 
 	belongs_to :user
 
@@ -163,7 +164,8 @@ So if we jumped into the `rails console`
 it will return `nil`.      
 If we did’t add `has_many :links` to `user.rb`, it will return `error`.      
 So now, the association between the two models is working.      
-The issue is that the links table in teh database dose’t have a column for users. We gonna need to add a migration, around the migration to add users to links. In the terminal:
+
+The issue is that the links table in the database dose’t have a column for users. We gonna need to add a migration, around the migration to add users to links. In the terminal:
 
 	rails g migration add_user_id_to_links user_id:integer:index
 	rake db:migrate
@@ -178,6 +180,7 @@ Then, commit
 Now, we need to update our link controller so that when a user submits a link that user ID we just created gets assigned to that link.
 
 `app/controllers/links_controller.rb` we gonna change the new and the create method
+
 	  def new
 	    @link = current_user.links.build
 	  end
@@ -187,12 +190,17 @@ Now, we need to update our link controller so that when a user submits a link th
 		…...
 	  end
 
-And now, we need to add some authorization to our controller to make sure nobody can do that not allowed to do. So we should add before filter to our controller
-under `app/controllers/links_controller.rb`, we add
-before_filter :authenticate_user!, except: [:index, :show]
-now if we are not signed in and hit the destroy, it takes us to a login page which is what we are.
+And now, we need to add some authorization to our controller to make sure nobody can do that not allowed to do. So we should add before filter to our controller.
+
+Under `app/controllers/links_controller.rb`, we add
+
+	before_filter :authenticate_user!, except: [:index, :show]
+
+Now if we are not signed in and hit the destroy, it takes us to a login page which is what we are.
 So even though we’ve authenticated, the links still show up. We shouldn’t be able to see them for not signed in.
+
 In our views, `app/views/links/index.html.erb`
+
         <td><%= link_to 'Show', link %></td>
         <% if link.user == current_user %>
           <td><%= link_to 'Edit', edit_link_path(link) %></td>
@@ -202,44 +210,59 @@ In our views, `app/views/links/index.html.erb`
 Finally, we want to get rid of this new link sense, you should be signed in to be able to submit the new link.
 `app/views/links/index.html.erb`
 we gonna to remove this line:
+
 	<br>
 	<%= link_to 'New Link', new_link_path %>
-so now, user has to signed in order to create a link as well as add it or destroy that link and only that link the user who created that link is able to destroy that link.
+
+So now, user has to signed in order to create a link as well as add it or destroy that link and only that link the user who created that link is able to destroy that link.
+
 That’s commit
+
 	git add .
 	git commit -am ‘Authorization on links’
 	git checkout master
 	git merge add_users
+
 So now we have the ability to sign in and out.
 
 # Bootstrap and styling
-https://github.com/twbs/bootstrap-sass           
+https://github.com/twbs/bootstrap-sass       
+
 To do that, let’s create a new branch
+
 	git checkout -b add_bootstrap
-we need to add bootstrap gem in our `Gemfile`
- gem 'bootstrap-sass', '~> 3.3', '>= 3.3.6'
+
+We need to add bootstrap gem in our `Gemfile`
+
+	gem 'bootstrap-sass', '~> 3.3', '>= 3.3.6'
+
 and that’s do `bundle install`, then go back to our server and restart it.
-A few things we to do to get bootstrap working
-Import Bootstrap styles in `app/assets/stylesheets/application.scss`:
+
+A few things we to do to get bootstrap working   
+Import Bootstrap styles in `app/assets/stylesheets/application.scss`:    
 `application.css` needs to rename to `application.scss`
+
 	// "bootstrap-sprockets" must be imported before "bootstrap" and "bootstrap/variables"
 	@import "bootstrap-sprockets";
 	@import "bootstrap";
+
 Note: If you use `bootstrap-sprockets`, you will get the error:
-	File to import not found or unreadable: bootstrap-sprockets
-Only for Twitter Bootstrap 3, bootstrap-sprockets is used.
+	```File to import not found or unreadable: bootstrap-sprockets
+Only for Twitter Bootstrap 3, bootstrap-sprockets is used.```      
 https://rubyplus.com/articles/3981-Integrating-Twitter-Bootstrap-4-with-Rails-5       
 
 And also, Require Bootstrap Javascripts in `app/assets/javascripts/application.js`:
+
 	//= require jquery
 	//= require bootstrap-sprockets
 
-It is important that it comes after //= require jquery. It is also important that //= require_tree is the last thing to be required. The reason is, //= require_tree . compiles each of the other Javascript files in the javascripts directory and any subdirectories. If you require bootstrap-sprockets after everything else, your other scripts may not have access to the Bootstrap functions.
+It is important that it comes after `//= require jquery`. It is also important that `//= require_tree` is the last thing to be required. The reason is, `//= require_tree` . compiles each of the other Javascript files in the javascripts directory and any subdirectories. If you require `bootstrap-sprockets` after everything else, your other scripts may not have access to the Bootstrap functions.
 
 One things I do know is the scaffold is gonna override currently the bootstrap. So we delete the entire file `app/stylesheets/scaffolds.scss`
 
 ## Adding some styling to our pages and our forms
 `app/views/layouts/application.html.erb`
+
 	<!DOCTYPE html>
 	<html>
 	  <head>
@@ -344,6 +367,7 @@ Next, in index.html.erb file
 
 
 `app/views/links/show.html.erb`
+
 	<div class="page-header">
 	  <h1><a href="<%= @link.url %>"><%= @link.title %></a><br> <small>Submitted by <%= @link.user.email %></small></h1>
 	</div>
@@ -361,6 +385,7 @@ Next, in index.html.erb file
 
 
 `app/views/links/_form.html.erb`
+
 	<%= form_for(link) do |f| %>
 	  <% if link.errors.any? %>
 	    <div id="error_explanation">
@@ -390,6 +415,7 @@ Next, in index.html.erb file
 
 
 `app/views/devise/registrations/edit.html.erb`
+
 	<h2>Edit <%= resource_name.to_s.humanize %></h2>
 
 	<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
@@ -432,6 +458,7 @@ Next, in index.html.erb file
 	  </div>
 
 `app/views/devise/registrations/new.html.erb`
+
 	<h2>Sign up</h2>
 
 	<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
@@ -461,6 +488,7 @@ Next, in index.html.erb file
 
 
 `app/views/devise/sessions/new.html.erb`
+
 	<h2>Sign in</h2>
 
 	<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
@@ -491,6 +519,7 @@ Next, in index.html.erb file
 
 
 Now, everything looks very good. Let’s commit and emerge
+
 	git add .
 	git commit -am ‘Add structure and basic styling’
 	git checkout master
