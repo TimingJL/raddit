@@ -179,7 +179,7 @@ Then, commit
 
 Now, we need to update our link controller so that when a user submits a link that user ID we just created gets assigned to that link.
 
-`app/controllers/links_controller.rb` we gonna change the new and the create method
+`app/controllers/links_controller.rb` we gonna change the `new` and the `create` method
 
 	  def new
 	    @link = current_user.links.build
@@ -527,26 +527,39 @@ Now, everything looks very good. Let’s commit and emerge
 
 
 # Voting
+
 	git checkout -b add_acts_as_votable
 We need to use acts_as_votable gem to build the voting
 so we add `gem 'acts_as_votable', '~> 0.10.0'` in the `Gemfile` and 
+
 	bundle install
+
 then restart the server
 So now we need to generate and run the migration on the acts_as_votable gem
+
 	rails g acts_as_votable:migration
-we’d create the database migration
+
+We’d create the database migration
+
 	rake db:migrate
+
 The first thing we need to do is in our model, we need to add `acts_as_votable` before the `belongs_to :user` in `app/models/link.rb`
+
 	acts_as_votable
+
 Let’s going to the rails console to confirm that is working
+
 	rails c
 	@link = Link.first
 	@user = User.first
 	@link.liked_by @user
 	@link.votes_for.size
 	@link.save
+
 So to get this inside our views, we need to first had some routes for links
+
 `config/routes.rb`
+
 	Rails.application.routes.draw do
 	  devise_for :users
 	  resources :links do 
@@ -560,6 +573,7 @@ So to get this inside our views, we need to first had some routes for links
 	end
 
 in `app/controller/links_controller.rb`, we need to create the up vote and down vote method
+
 	  def upvote
 	    @link = Link.find(params[:id])
 	    @link.upvote_by current_user
@@ -573,6 +587,7 @@ in `app/controller/links_controller.rb`, we need to create the up vote and down 
 	  end
 
 and inside the view `app/views/links/index.html.erb`
+
 	<% @links.each do |link| %>
 	  <div class="link row clearfix">
 	    <h2>
@@ -596,9 +611,11 @@ and inside the view `app/views/links/index.html.erb`
 	    </div>
 	<% end %>
 
-so we can Upvote and Downvote correctly
+So we can Upvote and Downvote correctly     
+
 Then, we add Upvote and Downvote in the show page
 In `app/views/links/show.html.erb`  , we add the following code at the bottom
+
 	<div class="btn-group pull-right">
 	  <%= link_to like_link_path(@link), method: :put, class: "btn btn-default btn-sm" do %>
 	    <span class="glyphicon glyphicon-chevron-up"></span>
@@ -612,29 +629,38 @@ In `app/views/links/show.html.erb`  , we add the following code at the bottom
 	  <% end %>
 	</div>
 
-Let’s create a new user `Sign up`, then we can Upvote and Downvote again. And the 
-edit and destroy links are gone because this is not my post.
+Let’s create a new user `Sign up`, then we can Upvote and Downvote again. 
+And the `edit` and `destroy` links are gone because this is not my post.
 Then commit
+
 	git add .
 	git commit -am ‘Added and setup acts_as_votable’
 	git checkout master
 	git merge add_acts_as_votable
 
 # Comment on boats
-we’re gonna make it so we can comment and the person who made that comment is able to delete the comment. So let’s create a new branch to do this.
+We’re gonna make it so we can comment and the person who made that comment is able to delete the comment. So let’s create a new branch to do this.
+
 	git checkout -b add_comments
+
 To implemente it through the gem, we are going to create a scaffold	and do it ourself.
+
 	rails g scaffold Comment link_id:integer:index body:text user:references --skip-stylesheets
+
 Let’s create migration model as well as the views and stuff for us which is fantastic.
+
 	rake db:migrate
+
 ## Simple_form
-we’re gonna to user a gem called `simple_form` to make it easier. We paste the following gem to the `Gemfile` and run bundle install
+We’re gonna to user a gem called `simple_form` to make it easier. We paste the following gem to the `Gemfile` and run bundle install
+
 	gem 'simple_form', '~> 3.2', '>= 3.2.1'
 	bundle update
 	bundle install
 
 Then, first thing we need to do is add association between our comments and our links model.
 `app/models/link.rb`
+
 	class Link < ApplicationRecord
 		acts_as_votable
 		belongs_to :user
@@ -642,6 +668,7 @@ Then, first thing we need to do is add association between our comments and our 
 	end
 
 `app/models/comment.rb`
+
 	class Comment < ApplicationRecord
 	  belongs_to :user
 	  belongs_to :link
@@ -649,6 +676,7 @@ Then, first thing we need to do is add association between our comments and our 
 
 Next, we need to add resource to our routes
 `config/routes.rb`
+
 	Rails.application.routes.draw do
 	  resources :comments
 	  devise_for :users
@@ -664,9 +692,11 @@ Next, we need to add resource to our routes
 	end
 
 You can see the routes
+
 	rake routes
 We attempt to add the comment routes for us. We need to update comments controller.
 In `app/controllers/commnets_controller.rb`, we need to update create method
+
   def create
     @link = Link.find(params[:link_id])
     @comment = @link.comments.new(comment_params)
@@ -686,6 +716,7 @@ In `app/controllers/commnets_controller.rb`, we need to update create method
 
 Now we need to add a form to our show page. We add the code at the bottom.
 `app/views/links/show.html.erb`
+
 	<h3 class="comments_title">
 	  <%= @link.comments.count %> Comments
 	</h3>
@@ -703,6 +734,7 @@ Now we need to add a form to our show page. We add the code at the bottom.
 
 on the comment folder, new a file:
 `app/views/comments/_comment.html.erb`
+
 	<%= div_for(comment) do %>
 		<div class="comments_wrapper clearfix">
 			<div class="pull-left">
@@ -721,27 +753,37 @@ on the comment folder, new a file:
 We go back to the application reload it, and go to the show page, you can see the comment form is showing up.
 ## If you getting NoMethodError in Links#show 
 The `div_for` method has been removed from Rails. To continue using it, add the `record_tag_helper` gem to your Gemfile:
+
   gem 'record_tag_helper', '~> 1.0'
 Consult the Rails upgrade guide for details.
+
 	gem 'record_tag_helper', '~> 1.0'
 	bundle update
 	bundle install
 	restart the server
 
 Let’s go ahead and commit and merge what we just did.
+
 	git add .
 	git commit -am ‘Add comments’
 	git checkout master
 	git merge add_comments
 
 So the website is pretty much done. But one thing that’s been bugging me I wanna take care of it’s the I’m submitted by email instead of by name. So I wanna add name field to the users. We create a new branch for this.
+
 	git checkout -b ‘add_name_to_users’
+
 To do this, we need to do migration
+
 	rails g migration add_name_to_users name:string
+
 So that creates our migration file
+
 	rake db:migrate
+
 Now we need to add input to our form field in order to accept that.
 `app/views/devise/registrations/edit.html.erb`
+
       <div class="form-group">
         <%= f.label :name %>
         <%= f.text_field :name, class: "form-control", :autofocus => true %>
@@ -749,6 +791,7 @@ Now we need to add input to our form field in order to accept that.
 
 Then we need to add some code to our application controller to save the name data.
 `app/controllers/application_controller.rb`
+
 	class ApplicationController < ActionController::Base
 	  # Prevent CSRF attacks by raising an exception.
 	  # For APIs, you may want to use :null_session instead.
@@ -767,9 +810,10 @@ Then we need to add some code to our application controller to save the name dat
 ## Getting undefined method `simple_form_for' in RoR app
 http://stackoverflow.com/questions/19791531/how-to-specify-devise-parameter-sanitizer-for-edit-action      
 The ` .for` method is deprecated, now we use ` .permit`
-The first arg is the action name. ` :sign_up` is for creating new Devise resources (such as users), and` :account_update` is for editing/updating the resource.
-The second arg, ` :keys` contains an array of the parameters you allow.
+The first arg is the action name. ` :sign_up` is for creating new Devise resources (such as users), and` :account_update` is for editing/updating the resource.   
+The second arg, ` :keys` contains an array of the parameters you allow.    
 If you want `nested_attributes`, there is an example in ` :account_update`, you put a separate array in with the key being ` <object>_attributes`.
+
 	class ApplicationController < ActionController::Base
 	  # Prevent CSRF attacks by raising an exception.
 	  # For APIs, you may want to use :null_session instead.
@@ -788,6 +832,7 @@ If you want `nested_attributes`, there is an example in ` :account_update`, you 
 
 `app/views/links/index.html.erb`
 change
+
     <h2>
       <%= link_to link.title, link %><br>
       <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user.email %></small>
@@ -802,6 +847,7 @@ to
 
 Now the same thing to the show page
 `app/views/links/show.html.erb`
+
 change the `link.user.email` to `link.user.name`
 
 And as well as comment
@@ -810,9 +856,10 @@ change the `link.user.email` to `link.user.name`
 
 A new user sign up, the form automatically gets the name
 In `app/views/devise/registrations/new.html.erb` add:
+
     <div class="form-group">
       <%= f.label :name %>
       <%= f.text_field :name, class: "form-control", :autofocus => true %>
     </div> 
 
-we are finished.
+Finished!
