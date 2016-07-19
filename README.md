@@ -303,7 +303,7 @@ Next, in index.html.erb file
 
 `app/views/links/show.html.erb`
 	<div class="page-header">
-	  <h1><a href="<%= @link.url %>"><%= @link.title %></a><br> <small>Submitted by <%= @link.user_id %></small></h1>
+	  <h1><a href="<%= @link.url %>"><%= @link.title %></a><br> <small>Submitted by <%= @link.user.email %></small></h1>
 	</div>
 
 	<div class="btn-group">
@@ -506,7 +506,7 @@ and inside the view `app/views/links/index.html.erb`
 	  <div class="link row clearfix">
 	    <h2>
 	      <%= link_to link.title, link %><br>
-	      <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user %></small>
+	      <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user.email %></small>
 	    </h2>
 
 	    <div class="btn-group">
@@ -662,3 +662,86 @@ Let’s go ahead and commit and merge what we just did.
 	git commit -am ‘Add comments’
 	git checkout master
 	git merge add_comments
+
+So the website is pretty much done. But one thing that’s been bugging me I wanna take care of it’s the I’m submitted by email instead of by name. So I wanna add name field to the users. We create a new branch for this.
+	git checkout -b ‘add_name_to_users’
+To do this, we need to do migration
+	rails g migration add_name_to_users name:string
+So that creates our migration file
+	rake db:migrate
+Now we need to add input to our form field in order to accept that.
+`app/views/devise/registrations/edit.html.erb`
+      <div class="form-group">
+        <%= f.label :name %>
+        <%= f.text_field :name, class: "form-control", :autofocus => true %>
+      </div>   
+
+Then we need to add some code to our application controller to save the name data.
+`app/controllers/application_controller.rb`
+	class ApplicationController < ActionController::Base
+	  # Prevent CSRF attacks by raising an exception.
+	  # For APIs, you may want to use :null_session instead.
+	  protect_from_forgery with: :exception
+		before_filter :configure_permitted_parameters, if: :devise_controller?
+
+		protected
+
+	  def configure_permitted_parameters
+	    devise_parameter_sanitizer.for(:sign_up) << :name
+	    devise_parameter_sanitizer.for(:account_update) << :name
+	  end
+
+	end
+
+## Getting undefined method `simple_form_for' in RoR app
+http://stackoverflow.com/questions/19791531/how-to-specify-devise-parameter-sanitizer-for-edit-action      
+The ` .for` method is deprecated, now we use ` .permit`
+The first arg is the action name. ` :sign_up` is for creating new Devise resources (such as users), and` :account_update` is for editing/updating the resource.
+The second arg, ` :keys` contains an array of the parameters you allow.
+If you want `nested_attributes`, there is an example in ` :account_update`, you put a separate array in with the key being ` <object>_attributes`.
+	class ApplicationController < ActionController::Base
+	  # Prevent CSRF attacks by raising an exception.
+	  # For APIs, you may want to use :null_session instead.
+	  protect_from_forgery with: :exception
+	  before_filter :configure_permitted_parameters, if: :devise_controller?
+
+		protected
+
+	  def configure_permitted_parameters
+	    devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
+	    devise_parameter_sanitizer.permit(:account_update, keys: [:name])
+	  end
+
+	end
+
+
+`app/views/links/index.html.erb`
+change
+    <h2>
+      <%= link_to link.title, link %><br>
+      <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user.email %></small>
+    </h2>
+
+to
+
+    <h2>
+      <%= link_to link.title, link %><br>
+      <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user.name %></small>
+    </h2>
+
+Now the same thing to the show page
+`app/views/links/show.html.erb`
+change the `link.user.email` to `link.user.name`
+
+And as well as comment
+`app/views/comments/_comment.html.erb`
+change the `link.user.email` to `link.user.name`
+
+A new user sign up, the form automatically gets the name
+In `app/views/devise/registrations/new.html.erb` add:
+    <div class="form-group">
+      <%= f.label :name %>
+      <%= f.text_field :name, class: "form-control", :autofocus => true %>
+    </div> 
+
+we are finished.
