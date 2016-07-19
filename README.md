@@ -147,7 +147,7 @@ In our view `app/views/layouts/application.html.erb`, we add conditional stateme
 		</ul>		
 	<% end %>
 
-and refresh the web page to ensure everythings work.
+and refresh the web page to ensure everything is work.
 We hope the sign out account does’t show the summit link. So to fix it, we need to create an association here between a user and links. In our user file `app/models/user.rb`, we are going to add ‘a user has many links’
 
 	has_many :links
@@ -216,7 +216,7 @@ we gonna to remove this line:
 
 So now, user has to signed in order to create a link as well as add it or destroy that link and only that link the user who created that link is able to destroy that link.
 
-That’s commit
+Let’s commit
 
 	git add .
 	git commit -am ‘Authorization on links’
@@ -697,21 +697,21 @@ You can see the routes
 We attempt to add the comment routes for us. We need to update comments controller.
 In `app/controllers/commnets_controller.rb`, we need to update create method
 
-  def create
-    @link = Link.find(params[:link_id])
-    @comment = @link.comments.new(comment_params)
-    @comment.user = current_user
+	  def create
+	    @link = Link.find(params[:link_id])
+	    @comment = @link.comments.new(comment_params)
+	    @comment.user = current_user
 
-    respond_to do |format|
-      if @comment.save
-        format.html { redirect_to @link, notice: 'Comment was successfully created.' }
-        format.json { render json: @comment, status: :created, location: @comment }
-      else
-        format.html { render action: "new" }
-        format.json { render json: @comment.errors, status: :unprocessable_entity }
-      end
-    end
-  end
+	    respond_to do |format|
+	      if @comment.save
+	        format.html { redirect_to @link, notice: 'Comment was successfully created.' }
+	        format.json { render json: @comment, status: :created, location: @comment }
+	      else
+	        format.html { render action: "new" }
+	        format.json { render json: @comment.errors, status: :unprocessable_entity }
+	      end
+	    end
+	  end
 
 
 Now we need to add a form to our show page. We add the code at the bottom.
