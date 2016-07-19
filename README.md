@@ -2,7 +2,8 @@
 Mackenzie Child's video really inspire me. So I decided to follow all of his rails video tutorial to learn how to build a web app. Through the video, I would try to build the web app by my self and record the courses step by step in text to facilitate the review.
 
 
-# How to Build a Reddit or Hacker News Style Web App in Rails
+# How to Build a Reddit or Hacker News Style Web App in Rails     
+https://mackenziechild.me/12-in-12/1/       
 
 ## What are the main things we want this application to do?
 1. User can sign up, sign in , and sign out.
@@ -17,9 +18,12 @@ Mackenzie Child's video really inspire me. So I decided to follow all of his rai
 
 #Create a new rails application
 First, I create a rails application named 'raddit'.
-	rails new raddit
+	```rails new raddit
+	```
 
-Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter. So we edit the 'Gemfile' under the main folder(raddit folder in this case) and add  `gem 'therubyracer'` in it. And run bundle install.
+Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter. So we edit the 'Gemfile' under the main folder(raddit folder in this case) and add  
+	`gem 'therubyracer'` 
+in it. And run bundle install.
 	bundle install
 
 Run rails server to make sure everything was installed correctly.
@@ -44,14 +48,14 @@ Run rails server to make sure everything was installed correctly.
 	git commit -am ‘Generate Link Scaffold’
 	git checkout master
 	git merge link_scaffold
-we’d merge the branch into the master branch
+We’d merge the branch into the master branch
 
 # Create users (Sign in and Sign out)
-we use the gem called `devise`. To do this, we start  by creating a new branch
+We use the gem called `devise`. To do this, we start  by creating a new branch
 	git checkout -b add_users
-To install ‘devise’, we are going to 
+To install ‘devise’, we are going to         
 https://rubygems.org/gems/devise                                  
-we need to add `gem ‘devise’` to our Gemfile
+We need to add `gem ‘devise’` to our Gemfile
 
 To install, we need to run 
 	bundle install
