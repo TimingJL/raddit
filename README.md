@@ -446,3 +446,101 @@ Next, in index.html.erb file
 	<% end %>
 
 	<%= render "devise/shared/links" %>
+
+
+Now, everything looks very good. Let’s commit and emerge
+	git add .
+	git commit -am ‘Add structure and basic styling’
+	git checkout master
+	git merge add_bootstrap
+
+
+# Voting
+	git checkout -b add_acts_as_votable
+We need to use acts_as_votable gem to build the voting
+so we add `gem 'acts_as_votable', '~> 0.10.0'` in the `Gemfile` and 
+	bundle install
+then restart the server
+So now we need to generate and run the migration on the acts_as_votable gem
+	rails g acts_as_votable:migration
+we’d create the database migration
+	rake db:migrate
+The first thing we need to do is in our model, we need to add `acts_as_votable` before the `belongs_to :user` in `app/models/link.rb`
+	acts_as_votable
+Let’s going to the rails console to confirm that is working
+	rails c
+	@link = Link.first
+	@user = User.first
+	@link.liked_by @user
+	@link.votes_for.size
+	@link.save
+So to get this inside our views, we need to first had some routes for links
+`config/routes.rb`
+	Rails.application.routes.draw do
+	  devise_for :users
+	  resources :links do 
+	  	member do 
+	      put "like", to:    "links#upvote"
+	      put "dislike", to: "links#downvote"
+	  	end
+	  end  
+
+	  root to: "links#index"
+	end
+
+in `app/controller/links_controller.rb`, we need to create the up vote and down vote method
+	  def upvote
+	    @link = Link.find(params[:id])
+	    @link.upvote_by current_user
+	    redirect_to :back
+	  end
+
+	  def downvote
+	    @link = Link.find(params[:id])
+	    @link.downvote_by current_user
+	    redirect_to :back
+	  end
+
+and inside the view `app/views/links/index.html.erb`
+	<% @links.each do |link| %>
+	  <div class="link row clearfix">
+	    <h2>
+	      <%= link_to link.title, link %><br>
+	      <small class="author">Submitted <%= time_ago_in_words(link.created_at) %> by <%= link.user %></small>
+	    </h2>
+
+	    <div class="btn-group">
+	        <a class="btn btn-default btn-sm" href="<%= link.url %>">Visit Link</a>
+	        <%= link_to like_link_path(link), method: :put, class: "btn btn-default btn-sm" do %>
+	          <span class="glyphicon glyphicon-chevron-up"></span>
+	          Upvote
+	          <%= link.get_upvotes.size %>
+	        <% end %>
+	        <%= link_to dislike_link_path(link), method: :put, class: "btn btn-default btn-sm" do %>
+	          <span class="glyphicon glyphicon-chevron-down">
+	          Downvote
+	          <%= link.get_downvotes.size %>
+	        <% end %>
+	      </div>
+	    </div>
+	<% end %>
+
+so we can Upvote and Downvote correctly
+Then, we add Upvote and Downvote in the show page
+In `app/views/links/show.html.erb`  , we add the following code at the bottom
+	<div class="btn-group pull-right">
+	  <%= link_to like_link_path(@link), method: :put, class: "btn btn-default btn-sm" do %>
+	    <span class="glyphicon glyphicon-chevron-up"></span>
+	    Upvote
+	    <%= @link.get_upvotes.size %>
+	  <% end %>
+	  <%= link_to dislike_link_path(@link), method: :put, class: "btn btn-default btn-sm" do %>
+	    <span class="glyphicon glyphicon-chevron-down">
+	    Downvote
+	    <%= @link.get_downvotes.size %>
+	  <% end %>
+	</div>
+
+Let’s create a new user `Sign up`, then we can Upvote and Downvote again. And the 
+edit and destroy links are gone because this is not my post.
+Then commit
