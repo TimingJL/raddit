@@ -18,16 +18,14 @@ https://mackenziechild.me/12-in-12/1/
 
 #Create a new rails application
 First, I create a rails application named 'raddit'.   
-	```
 	rails new raddit
-	```
 
 Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter. So we edit the 'Gemfile' under the main folder(raddit folder in this case) and add  
 	`gem 'therubyracer'` 
-in it. And run bundle install.
+in it. And run bundle install.    
 	bundle install
 
-Run rails server to make sure everything was installed correctly.
+Run rails server to make sure everything was installed correctly.     
 	rails server
 
 # Initialize the git and committed, so we can track our work
