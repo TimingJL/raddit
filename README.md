@@ -544,3 +544,121 @@ In `app/views/links/show.html.erb`  , we add the following code at the bottom
 Let’s create a new user `Sign up`, then we can Upvote and Downvote again. And the 
 edit and destroy links are gone because this is not my post.
 Then commit
+	git add .
+	git commit -am ‘Added and setup acts_as_votable’
+	git checkout master
+	git merge add_acts_as_votable
+
+# Comment on boats
+we’re gonna make it so we can comment and the person who made that comment is able to delete the comment. So let’s create a new branch to do this.
+	git checkout -b add_comments
+To implemente it through the gem, we are going to create a scaffold	and do it ourself.
+	rails g scaffold Comment link_id:integer:index body:text user:references --skip-stylesheets
+Let’s create migration model as well as the views and stuff for us which is fantastic.
+	rake db:migrate
+## Simple_form
+we’re gonna to user a gem called `simple_form` to make it easier. We paste the following gem to the `Gemfile` and run bundle install
+	gem 'simple_form', '~> 3.2', '>= 3.2.1'
+	bundle update
+	bundle install
+
+Then, first thing we need to do is add association between our comments and our links model.
+`app/models/link.rb`
+	class Link < ApplicationRecord
+		acts_as_votable
+		belongs_to :user
+		has_many :comments
+	end
+
+`app/models/comment.rb`
+	class Comment < ApplicationRecord
+	  belongs_to :user
+	  belongs_to :link
+	end
+
+Next, we need to add resource to our routes
+`config/routes.rb`
+	Rails.application.routes.draw do
+	  resources :comments
+	  devise_for :users
+	  resources :links do 
+	  	member do 
+	      put "like", to:    "links#upvote"
+	      put "dislike", to: "links#downvote"
+	  	end
+	  	resources :comments
+	  end  
+
+	  root to: "links#index"
+	end
+
+You can see the routes
+	rake routes
+We attempt to add the comment routes for us. We need to update comments controller.
+In `app/controllers/commnets_controller.rb`, we need to update create method
+  def create
+    @link = Link.find(params[:link_id])
+    @comment = @link.comments.new(comment_params)
+    @comment.user = current_user
+
+    respond_to do |format|
+      if @comment.save
+        format.html { redirect_to @link, notice: 'Comment was successfully created.' }
+        format.json { render json: @comment, status: :created, location: @comment }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @comment.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+
+Now we need to add a form to our show page. We add the code at the bottom.
+`app/views/links/show.html.erb`
+	<h3 class="comments_title">
+	  <%= @link.comments.count %> Comments
+	</h3>
+
+	<div id="comments">
+	  <%= render :partial => @link.comments %>
+	</div>
+	<%= simple_form_for [@link, Comment.new]  do |f| %>
+	  <div class="field">
+	    <%= f.text_area :body, class: "form-control" %>
+	  </div>
+	  <br>
+	  <%= f.submit "Add Comment", class: "btn btn-primary" %>
+	<% end %>
+
+on the comment folder, new a file:
+`app/views/comments/_comment.html.erb`
+	<%= div_for(comment) do %>
+		<div class="comments_wrapper clearfix">
+			<div class="pull-left">
+				<p class="lead"><%= comment.body %></p>
+				<p><small>Submitted <strong><%= time_ago_in_words(comment.created_at) %> ago</strong> by <%= comment.user.email %></small></p>
+			</div>
+
+			<div class="btn-group pull-right">
+				<% if comment.user == current_user -%>
+					<%= link_to 'Destroy', comment, method: :delete, data: { confirm: 'Are you sure?' }, class: "btn btn-sm btn-default" %>
+				<% end %>
+			</div>
+		</div>
+	<% end %>
+
+We go back to the application reload it, and go to the show page, you can see the comment form is showing up.
+## If you getting NoMethodError in Links#show 
+The `div_for` method has been removed from Rails. To continue using it, add the `record_tag_helper` gem to your Gemfile:
+  gem 'record_tag_helper', '~> 1.0'
+Consult the Rails upgrade guide for details.
+	gem 'record_tag_helper', '~> 1.0'
+	bundle update
+	bundle install
+	restart the server
+
+Let’s go ahead and commit and merge what we just did.
+	git add .
+	git commit -am ‘Add comments’
+	git checkout master
+	git merge add_comments

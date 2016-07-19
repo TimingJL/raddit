@@ -7,6 +7,8 @@ gem 'autoprefixer-rails'
 gem 'sass-rails', github: 'rails/sass-rails'
 gem 'sprockets'
 gem 'acts_as_votable', '~> 0.10.0'
+gem 'simple_form', '~> 3.2', '>= 3.2.1'
+gem 'record_tag_helper', '~> 1.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.0'
