@@ -50,63 +50,89 @@ Run rails server to make sure everything was installed correctly.
 	git commit -am ‘Generate Link Scaffold’
 	git checkout master
 	git merge link_scaffold
-We’d merge the branch into the master branch
+We’d merge the branch into the master branch.
 
 # Create users (Sign in and Sign out)
 We use the gem called `devise`. To do this, we start  by creating a new branch
+
 	git checkout -b add_users
+
 To install ‘devise’, we are going to         
 https://rubygems.org/gems/devise                                  
 We need to add `gem ‘devise’` to our Gemfile
 
 To install, we need to run 
+
 	bundle install
 
-we’re going to run the devise generator
+We’re going to run the devise generator
+
 	rails g devise:install
 
 
-under `config/environments/development.rb`, we need to add this line
+Under `config/environments/development.rb`, we need to add this line
+
 	config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
-under `config/locales/route.rb`, we add `root to: "links#index"`
-so we go back to `http://localhost:3000` it would show us the links controller as homepage.
+Under `config/locales/route.rb`, we add 
+
+root to: "links#index"
+
+So we go back to `http://localhost:3000`, it would show us the links controller as homepage.
 
 In `app/views/layouts/application.html.erb`, we add
+
 	<% flash.each do |name, msg| %>
 		<%= content_tag(:div, msg, class: "alert alert-#{name}") %>
 	<% end %>
-in <body></body> before `<%= yield%>`
 
-we add the devise under the views directory
-rails g devise:views
-now we can generate the user with the devise
+in `<body></body>` before `<%= yield%>`
+
+We add the devise under the views directory
+
+	rails g devise:views
+
+Now we can generate the user with the devise
+
 	rails g devise User
-then generate the model and migration for us
+
+Then generate the model and migration for us
+
 	rake db:migrate
 
-Now, under the model, we have a user. Then, restart the server to check out it actaully worked by going to 
+Now, under the model, we have a user. Then, restart the server to check out it actaully worked by going to         
 http://localhost:3000/users/sign_up         
 
-we can make sure everything is correct by rails console
+We can make sure everything is correct by rails console
+
 	rails c
-In rails console, we do:
+
+In `rails console`, we do:
+
 	User.count
-we can do `SELECT COUNT(*) FROM "users"` by ActiveRecord
+
+We can do `SELECT COUNT(*) FROM "users"` by ActiveRecord
 If we do
+
 	@User = User.first
-we can see user ID, his email, and some other attribute
+
+We can see user ID, his email, and some other attribute
 Then we get out the console by
+
 	exit
+
 or
+
 	control + C
 
 the commit
+
 	git add .
 	git commit -am ‘Add devise and create User model’
 
-Now, we have the ability to sign in and out, but it’s not very practical for us to sign in and sign out, so that’s add some links to our view files.
+Now, we have the ability to sign in and out, but it’s not very practical for us to sign in and sign out, so that’s add some links to our view files.      
 In our view `app/views/layouts/application.html.erb`. we add conditional statement
+
 	<% if user_signed_in? %>
 		<ul>
 			<li><%= link_to 'Submit link', new_link_path %></li>
@@ -122,20 +148,30 @@ In our view `app/views/layouts/application.html.erb`. we add conditional stateme
 
 and refresh the web page to ensure everythings work.
 We hope the sign out account does’t show the summit lin. So to fix it, we need to create an association here between a user and links. In our user file `app/models/user.rb`, we are going to add ‘a user has many links’
+
 	has_many :links
+
 And under ‘app/models/link.rb’, we add ‘a link belongs to user’
+
 	belongs_to :user
-So if we jumped into the rails console
+
+So if we jumped into the `rails console`
+
 	@link = Link.first
 	@link.user
-it will return `nil`. If we did’t add `has_many :links` to `user.rb`, it will return error.
-So now, the association between the two models is working.
+
+it will return `nil`.      
+If we did’t add `has_many :links` to `user.rb`, it will return `error`.      
+So now, the association between the two models is working.      
 The issue is that the links table in teh database dose’t have a column for users. We gonna need to add a migration, around the migration to add users to links. In the terminal:
+
 	rails g migration add_user_id_to_links user_id:integer:index
 	rake db:migrate
+
 That’s go back to rails console to confirm that it worked.
 
 Then, commit
+
 	git add .
 	git commit -am ‘Add association between Link and User’
 
