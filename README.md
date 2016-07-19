@@ -18,7 +18,8 @@ https://mackenziechild.me/12-in-12/1/
 
 #Create a new rails application
 First, I create a rails application named 'raddit'.
-	```rails new raddit
+	```
+	rails new raddit
 	```
 
 Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter. So we edit the 'Gemfile' under the main folder(raddit folder in this case) and add  
