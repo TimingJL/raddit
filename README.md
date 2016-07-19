@@ -17,7 +17,7 @@ https://mackenziechild.me/12-in-12/1/
 4. Comment on links submissions
 
 #Create a new rails application
-First, I create a rails application named 'raddit'.
+First, I create a rails application named 'raddit'.   
 	```
 	rails new raddit
 	```
