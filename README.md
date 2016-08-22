@@ -1,6 +1,7 @@
 # Learning by Doing 
-Mackenzie Child's video really inspire me. So I decided to follow all of his rails video tutorial to learn how to build a web app. Through the video, I would try to build the web app by my self and record the courses step by step in text to facilitate the review.
+Mackenzie Child's video really inspire me. So I decided to follow all of his rails video tutorial to learn how to build a web app. Through the video, I would try to build the web app by my self and record the courses step by step in text to facilitate the review.           
 
+![image](https://github.com/TimingJL/raddit/blob/master/pic/machenziechild.jpeg)
 
 # How to Build a Reddit or Hacker News Style Web App in Rails     
 https://mackenziechild.me/12-in-12/1/       
@@ -695,7 +696,7 @@ You can see the routes
 
 	rake routes
 We attempt to add the comment routes for us. We need to update comments controller.
-In `app/controllers/commnets_controller.rb`, we need to update create method
+In `app/controllers/commnets_controller.rb`, we need to update `create method`
 
 	  def create
 	    @link = Link.find(params[:link_id])
